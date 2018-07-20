@@ -18,33 +18,26 @@ package io.woolford.stage.destination.syslog;
 import com.streamsets.pipeline.api.*;
 import com.streamsets.pipeline.api.base.configurablestage.DTarget;
 
+
 @StageDef(
-    version = 1,
-    label = "Syslog Destination",
-    description = "",
-    icon = "syslog.png",
-    recordsByRef = true,
-    onlineHelpRefUrl = ""
+        version = 1,
+        label = "Syslog Destination",
+        description = "",
+        icon = "syslog.png",
+        recordsByRef = true,
+        onlineHelpRefUrl = ""
 )
 @ConfigGroups(value = Groups.class)
 @GenerateResourceBundle
 public class SyslogDTarget extends DTarget {
 
-  @ConfigDef(
-          required = true,
-          label = "Syslog server hostname",
-          type = ConfigDef.Type.STRING,
-          defaultValue = "localhost",
-          description = "Syslog server hostname",
-          displayPosition = 10,
-          group = "SYSLOG"
-  )
-  public String conf;
+    @ConfigDefBean
+    public SyslogConfig config;
 
-  @Override
-  protected Target createTarget() {
-    return new SyslogTarget(conf);
-  }
+    @Override
+    protected Target createTarget() {
+        return new SyslogTarget(config);
+    }
 
 
 }

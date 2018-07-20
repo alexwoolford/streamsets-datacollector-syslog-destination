@@ -26,26 +26,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TestSyslogTarget {
-  @Test
-  public void testWriteSingleRecord() throws Exception {
-    TargetRunner runner = new TargetRunner.Builder(SyslogDTarget.class)
-        .addConfiguration("conf", "value")
-        .build();
+    @Test
+    public void testWriteSingleRecord() throws Exception {
 
-    runner.runInit();
+        SyslogConfig syslogConfig = new SyslogConfig();
+        syslogConfig.syslogServerName = "synology.woolford.io";
+        syslogConfig.syslogServerPort = "514";
+        
+        TargetRunner runner = new TargetRunner.Builder(SyslogDTarget.class, new SyslogTarget(syslogConfig))
+                .build();
 
-    Record record = RecordCreator.create();
-    Map<String, Field> fields = new HashMap<>();
-    fields.put("first", Field.create("John"));
-    fields.put("last", Field.create("Smith"));
-    fields.put("someField", Field.create("some value"));
-    record.set(Field.create(fields));
+        runner.runInit();
+
+        Record record = RecordCreator.create();
+        Map<String, Field> fields = new HashMap<>();
+        fields.put("first", Field.create("John"));
+        fields.put("last", Field.create("Smith"));
+        fields.put("someField", Field.create("some value"));
+        record.set(Field.create(fields));
 
 
-    runner.runWrite(Arrays.asList(record));
+        runner.runWrite(Arrays.asList(record));
 
-    // Here check the data destination. E.g. a mock.
+        // Here check the data destination. E.g. a mock.
 
-    runner.runDestroy();
-  }
+        runner.runDestroy();
+    }
 }

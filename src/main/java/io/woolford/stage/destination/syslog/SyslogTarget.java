@@ -19,6 +19,7 @@ import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.MessageFormat;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.sender.TcpSyslogMessageSender;
+import com.streamsets.pipeline.api.base.RecordTarget;
 import io.woolford.stage.lib.sample.Errors;
 
 import com.streamsets.pipeline.api.Batch;
@@ -37,27 +38,23 @@ import java.util.List;
 /**
  * This target is an example and does not actually write to any destination.
  */
-public class SyslogTarget extends BaseTarget {
+public class SyslogTarget extends RecordTarget {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyslogTarget.class);
 
-    public SyslogTarget(String conf) {
+    private final SyslogConfig config;
+
+    public SyslogTarget(SyslogConfig config) {
+        this.config = config;
     }
 
+
+    /** {@inheritDoc} */
     @Override
     protected List<ConfigIssue> init() {
         // Validate configuration values and open any required resources.
         List<ConfigIssue> issues = super.init();
 
-//        if (getConfig().equals("invalidValue")) {
-//            issues.add(
-//                    getContext().createConfigIssue(
-//                            Groups.SYSLOG.name(), "config", Errors.SAMPLE_00, "Here's what's wrong..."
-//                    )
-//            );
-//        }
-
-        // If issues is not empty, the UI will inform the user of each configuration issue in the list.
         return issues;
     }
 
@@ -80,10 +77,10 @@ public class SyslogTarget extends BaseTarget {
                     case DISCARD:
                         break;
                     case TO_ERROR:
-                        getContext().toError(record, Errors.SAMPLE_01, e.toString());
+                        getContext().toError(record, Errors.SYSLOG_01, e.toString());
                         break;
                     case STOP_PIPELINE:
-                        throw new StageException(Errors.SAMPLE_01, e.toString());
+                        throw new StageException(Errors.SYSLOG_01, e.toString());
                     default:
                         throw new IllegalStateException(
                                 Utils.format("Unknown OnError value '{}'", getContext().getOnErrorRecord(), e)
@@ -94,7 +91,7 @@ public class SyslogTarget extends BaseTarget {
     }
 
 
-    private void write(Record record) throws OnRecordErrorException {
+    public void write(Record record) {
 
         // TODO: write the records to your final destination
 
