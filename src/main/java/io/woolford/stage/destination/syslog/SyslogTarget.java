@@ -21,6 +21,7 @@ import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.MessageFormat;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.sender.TcpSyslogMessageSender;
+import com.cloudbees.syslog.sender.UdpSyslogMessageSender;
 import com.streamsets.pipeline.api.base.RecordTarget;
 import io.woolford.stage.lib.sample.Errors;
 
@@ -99,20 +100,21 @@ public class SyslogTarget extends RecordTarget {
 
         // TODO: write the records to your final destination
 
+        String message = record.get("/message").getValue().toString();
+
         // Initialise sender
-        TcpSyslogMessageSender messageSender = new TcpSyslogMessageSender();
+        UdpSyslogMessageSender messageSender = new UdpSyslogMessageSender();
         messageSender.setDefaultMessageHostname("myhostname"); // some syslog cloud services may use this field to transmit a secret key
         messageSender.setDefaultAppName("myapp");
         messageSender.setDefaultFacility(Facility.USER);
-        messageSender.setDefaultSeverity(Severity.INFORMATIONAL);
+        messageSender.setDefaultSeverity(config.syslogServerSeverityType);
         messageSender.setSyslogServerHostname(config.syslogServerName);
         messageSender.setSyslogServerPort(config.syslogServerPort);
         messageSender.setMessageFormat(MessageFormat.RFC_3164); // optional, default is RFC 3164
-        messageSender.setSsl(false);
 
         // send a Syslog message
         try {
-            messageSender.sendMessage("Yo, Alex!");
+            messageSender.sendMessage(message);
         } catch (IOException e) {
             e.printStackTrace();
         }

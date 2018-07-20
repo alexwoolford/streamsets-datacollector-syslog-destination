@@ -42,7 +42,7 @@ public class TestSyslogTarget {
         Map<String, Field> fields = new HashMap<>();
         fields.put("first", Field.create("John"));
         fields.put("last", Field.create("Smith"));
-        fields.put("someField", Field.create("some value"));
+        fields.put("message", Field.create("one, two, three"));
         record.set(Field.create(fields));
 
 

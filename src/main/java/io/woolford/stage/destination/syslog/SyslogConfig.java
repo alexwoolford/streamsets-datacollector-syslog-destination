@@ -1,5 +1,6 @@
 package io.woolford.stage.destination.syslog;
 
+import com.cloudbees.syslog.Severity;
 import com.streamsets.pipeline.api.ConfigDef;
 import com.streamsets.pipeline.api.ValueChooserModel;
 
@@ -37,8 +38,6 @@ public class SyslogConfig {
             group = "SYSLOG"
     )
     @ValueChooserModel(SyslogSeverityChooserValues.class)
-    public SyslogSeverityTypes syslogServerSeverityType = SyslogSeverityTypes.INFORMATIONAL;
-
-
+    public Severity syslogServerSeverityType = Severity.INFORMATIONAL;
 
 }
