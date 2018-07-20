@@ -1,6 +1,7 @@
 package io.woolford.stage.destination.syslog;
 
 import com.streamsets.pipeline.api.ConfigDef;
+import com.streamsets.pipeline.api.ValueChooserModel;
 
 public class SyslogConfig {
 
@@ -18,12 +19,26 @@ public class SyslogConfig {
     @ConfigDef(
             required = true,
             label = "Syslog server port",
-            type = ConfigDef.Type.STRING,
+            type = ConfigDef.Type.NUMBER,
             defaultValue = "514",
             description = "Syslog server port",
-            displayPosition = 10,
+            displayPosition = 20,
             group = "SYSLOG"
     )
-    public String syslogServerPort;
+    public int syslogServerPort;
+
+    @ConfigDef(
+            required = true,
+            label = "Syslog severity level",
+            type = ConfigDef.Type.MODEL,
+            defaultValue = "INFORMATIONAL",
+            description = "Syslog severity level",
+            displayPosition = 30,
+            group = "SYSLOG"
+    )
+    @ValueChooserModel(SyslogSeverityChooserValues.class)
+    public SyslogSeverityTypes syslogServerSeverityType = SyslogSeverityTypes.INFORMATIONAL;
+
+
 
 }

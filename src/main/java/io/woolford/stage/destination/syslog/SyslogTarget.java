@@ -15,6 +15,8 @@
  */
 package io.woolford.stage.destination.syslog;
 
+import _ss_com.streamsets.pipeline.stage.common.DefaultErrorRecordHandler;
+import _ss_com.streamsets.pipeline.stage.common.ErrorRecordHandler;
 import com.cloudbees.syslog.Facility;
 import com.cloudbees.syslog.MessageFormat;
 import com.cloudbees.syslog.Severity;
@@ -43,6 +45,8 @@ public class SyslogTarget extends RecordTarget {
     private static final Logger LOG = LoggerFactory.getLogger(SyslogTarget.class);
 
     private final SyslogConfig config;
+    private ErrorRecordHandler errorRecordHandler;
+
 
     public SyslogTarget(SyslogConfig config) {
         this.config = config;
@@ -54,7 +58,7 @@ public class SyslogTarget extends RecordTarget {
     protected List<ConfigIssue> init() {
         // Validate configuration values and open any required resources.
         List<ConfigIssue> issues = super.init();
-
+        errorRecordHandler = new DefaultErrorRecordHandler(getContext());
         return issues;
     }
 
@@ -101,8 +105,8 @@ public class SyslogTarget extends RecordTarget {
         messageSender.setDefaultAppName("myapp");
         messageSender.setDefaultFacility(Facility.USER);
         messageSender.setDefaultSeverity(Severity.INFORMATIONAL);
-        messageSender.setSyslogServerHostname("synology.woolford.io");
-        messageSender.setSyslogServerPort(514);
+        messageSender.setSyslogServerHostname(config.syslogServerName);
+        messageSender.setSyslogServerPort(config.syslogServerPort);
         messageSender.setMessageFormat(MessageFormat.RFC_3164); // optional, default is RFC 3164
         messageSender.setSsl(false);
 

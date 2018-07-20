@@ -7,8 +7,9 @@
     remote_lib_path: /opt/streamsets-datacollector/user-libs/streamsets-datacollector-syslog-destination/lib
 
   tasks:
-      - name: rebuild jars
-        local_action: shell mvn clean package -DskipTests chdir=/Users/alexwoolford/streamsets-datacollector-syslog-destination
+      - name: restart sdc
+        service: name=sdc
+                 state=stopped
 
       - name: delete remote lib path
         file:
@@ -20,6 +21,9 @@
           path: "{{ remote_lib_path }}"
           state: directory
 
+      - name: rebuild jars
+        local_action: shell mvn clean package -DskipTests chdir=/Users/alexwoolford/streamsets-datacollector-syslog-destination
+
       - name: copy jar to streamsets
         copy:
           src: /Users/alexwoolford/streamsets-datacollector-syslog-destination/target/streamsets-datacollector-syslog-destination-1.0-SNAPSHOT.jar
@@ -28,4 +32,4 @@
 
       - name: restart sdc
         service: name=sdc
-                 state=restarted
+                 state=started

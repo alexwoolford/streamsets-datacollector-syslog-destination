@@ -31,8 +31,8 @@ public class TestSyslogTarget {
 
         SyslogConfig syslogConfig = new SyslogConfig();
         syslogConfig.syslogServerName = "synology.woolford.io";
-        syslogConfig.syslogServerPort = "514";
-        
+        syslogConfig.syslogServerPort = 514;
+
         TargetRunner runner = new TargetRunner.Builder(SyslogDTarget.class, new SyslogTarget(syslogConfig))
                 .build();
 
