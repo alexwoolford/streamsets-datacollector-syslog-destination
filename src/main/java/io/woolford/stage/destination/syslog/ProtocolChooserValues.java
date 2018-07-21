@@ -15,25 +15,10 @@
  */
 package io.woolford.stage.destination.syslog;
 
-import com.streamsets.pipeline.api.GenerateResourceBundle;
-import com.streamsets.pipeline.api.Label;
+import com.streamsets.pipeline.api.base.BaseEnumChooserValues;
 
-@GenerateResourceBundle
-public enum Groups implements Label {
-    SYSLOG("Syslog Connection"),
-    MESSAGE("Message Mapping");
-
-    private final String label;
-
-    private Groups(String label) {
-        this.label = label;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getLabel() {
-        return this.label;
+public class ProtocolChooserValues extends BaseEnumChooserValues<ProtocolType> {
+    public ProtocolChooserValues() {
+        super(ProtocolType.class);
     }
 }

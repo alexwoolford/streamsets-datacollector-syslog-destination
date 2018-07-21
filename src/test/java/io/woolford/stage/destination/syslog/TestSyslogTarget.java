@@ -15,8 +15,11 @@
  */
 package io.woolford.stage.destination.syslog;
 
+import com.cloudbees.syslog.MessageFormat;
 import com.streamsets.pipeline.api.Field;
+import com.streamsets.pipeline.api.OnRecordError;
 import com.streamsets.pipeline.api.Record;
+import com.streamsets.pipeline.api.Target;
 import com.streamsets.pipeline.sdk.RecordCreator;
 import com.streamsets.pipeline.sdk.TargetRunner;
 import org.junit.Test;
@@ -26,30 +29,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TestSyslogTarget {
+    private static SyslogDTarget getDefaultConfig() {
+        SyslogDTarget dtarget = new SyslogDTarget();
+        dtarget.config = new SyslogConfig();
+        dtarget.config.syslogServerName = "localhost";
+        dtarget.config.syslogServerPort = 2514;
+        dtarget.config.syslogMessageFormat = MessageFormat.RFC_3164;
+        dtarget.config.syslogProtocolType = "UDP";
+        dtarget.config.syslogMessageTextEL = "${record:value('/message')}";
+        dtarget.config.syslogMessageHostnameEL = "${record:value('/hostname')}";
+        dtarget.config.syslogApplicationNameEL = "${record:value('/application')}";
+        dtarget.config.syslogFacilityEL = "${record:value('/facility')}";
+        dtarget.config.syslogSeverityEL = "${record:value('/severity')}";
+        return dtarget;
+    }
+
     @Test
     public void testWriteSingleRecord() throws Exception {
-
-        SyslogConfig syslogConfig = new SyslogConfig();
-        syslogConfig.syslogServerName = "synology.woolford.io";
-        syslogConfig.syslogServerPort = 514;
-
-        TargetRunner runner = new TargetRunner.Builder(SyslogDTarget.class, new SyslogTarget(syslogConfig))
-                .build();
+        SyslogDTarget config = getDefaultConfig();
+        Target target = config.createTarget();
+        TargetRunner runner = new TargetRunner.Builder(SyslogDTarget.class, target).setOnRecordError(OnRecordError.TO_ERROR).build();
 
         runner.runInit();
 
         Record record = RecordCreator.create();
         Map<String, Field> fields = new HashMap<>();
-        fields.put("first", Field.create("John"));
-        fields.put("last", Field.create("Smith"));
-        fields.put("message", Field.create("one, two, three"));
+        fields.put("message", Field.create("myTestMessage"));
+        fields.put("hostname", Field.create("myTestHost"));
+        fields.put("application", Field.create("myTestApp"));
+        fields.put("facility", Field.create("1"));
+        fields.put("severity", Field.create("1"));
         record.set(Field.create(fields));
-
 
         runner.runWrite(Arrays.asList(record));
 
-        // Here check the data destination. E.g. a mock.
-
         runner.runDestroy();
+
     }
 }

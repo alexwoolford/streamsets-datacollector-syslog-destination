@@ -15,26 +15,27 @@
  */
 package io.woolford.stage.destination.syslog;
 
+import _ss_com.streamsets.pipeline.lib.el.RecordEL;
+import _ss_com.streamsets.pipeline.lib.el.TimeNowEL;
 import _ss_com.streamsets.pipeline.stage.common.DefaultErrorRecordHandler;
 import _ss_com.streamsets.pipeline.stage.common.ErrorRecordHandler;
 import com.cloudbees.syslog.Facility;
-import com.cloudbees.syslog.MessageFormat;
 import com.cloudbees.syslog.Severity;
 import com.cloudbees.syslog.sender.TcpSyslogMessageSender;
 import com.cloudbees.syslog.sender.UdpSyslogMessageSender;
-import com.streamsets.pipeline.api.base.RecordTarget;
-import io.woolford.stage.lib.sample.Errors;
-
 import com.streamsets.pipeline.api.Batch;
 import com.streamsets.pipeline.api.Record;
 import com.streamsets.pipeline.api.StageException;
-import com.streamsets.pipeline.api.base.BaseTarget;
-import com.streamsets.pipeline.api.base.OnRecordErrorException;
+import com.streamsets.pipeline.api.base.RecordTarget;
+import com.streamsets.pipeline.api.el.ELEval;
+import com.streamsets.pipeline.api.el.ELEvalException;
+import com.streamsets.pipeline.api.el.ELVars;
 import com.streamsets.pipeline.api.impl.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -44,22 +45,38 @@ import java.util.List;
 public class SyslogTarget extends RecordTarget {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyslogTarget.class);
-
     private final SyslogConfig config;
     private ErrorRecordHandler errorRecordHandler;
-
+    private ELEval syslogmessageTextElEval;
+    private ELEval syslogMessageHostnameElEval;
+    private ELEval syslogApplicationNameElEval;
+    private ELEval syslogFacilityEval;
+    private ELEval syslogSeverityEval;
 
     public SyslogTarget(SyslogConfig config) {
         this.config = config;
     }
 
+    private static <T> T resolveEL(ELEval elEval, ELVars elVars, String configValue, Class<T> returnType) throws ELEvalException {
+        return elEval.eval(elVars, configValue, returnType);
+    }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected List<ConfigIssue> init() {
         // Validate configuration values and open any required resources.
         List<ConfigIssue> issues = super.init();
         errorRecordHandler = new DefaultErrorRecordHandler(getContext());
+
+        this.syslogmessageTextElEval = getContext().createELEval("syslogMessageTextEL");
+        this.syslogMessageHostnameElEval = getContext().createELEval("syslogMessageHostnameEL");
+        this.syslogApplicationNameElEval = getContext().createELEval("syslogApplicationNameEL");
+        this.syslogFacilityEval = getContext().createELEval("syslogFacilityEL");
+        this.syslogSeverityEval = getContext().createELEval("syslogSeverityEL");
+
+
         return issues;
     }
 
@@ -96,29 +113,55 @@ public class SyslogTarget extends RecordTarget {
     }
 
 
-    public void write(Record record) {
+    public void write(Record record) throws StageException {
 
-        // TODO: write the records to your final destination
+        ELVars variables = getContext().createELVars();
+        RecordEL.setRecordInContext(variables, record);
+        TimeNowEL.setTimeNowInContext(variables, new Date());
 
-        String message = record.get("/message").getValue().toString();
+        String messageText = resolveEL(syslogmessageTextElEval, variables, config.syslogMessageTextEL, String.class);
+        String messageHostname = resolveEL(syslogMessageHostnameElEval, variables, config.syslogMessageHostnameEL, String.class);
+        String applicationName = resolveEL(syslogApplicationNameElEval, variables, config.syslogApplicationNameEL, String.class);
+        String facilityStr = resolveEL(syslogFacilityEval, variables, config.syslogFacilityEL, String.class);
+        String severityStr = resolveEL(syslogSeverityEval, variables, config.syslogSeverityEL, String.class);
 
-        // Initialise sender
-        UdpSyslogMessageSender messageSender = new UdpSyslogMessageSender();
-        messageSender.setDefaultMessageHostname("myhostname"); // some syslog cloud services may use this field to transmit a secret key
-        messageSender.setDefaultAppName("myapp");
-        messageSender.setDefaultFacility(Facility.USER);
-        messageSender.setDefaultSeverity(config.syslogServerSeverityType);
-        messageSender.setSyslogServerHostname(config.syslogServerName);
-        messageSender.setSyslogServerPort(config.syslogServerPort);
-        messageSender.setMessageFormat(MessageFormat.RFC_3164); // optional, default is RFC 3164
+        Facility facility = Facility.fromNumericalCode(Integer.parseInt(facilityStr));
+        Severity severity = Severity.fromNumericalCode(Integer.parseInt(severityStr));
 
-        // send a Syslog message
-        try {
-            messageSender.sendMessage(message);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (config.syslogProtocolType == "TCP") {
+
+            TcpSyslogMessageSender messageSender = new TcpSyslogMessageSender();
+
+            messageSender.setSyslogServerHostname(config.syslogServerName);
+            messageSender.setSyslogServerPort(config.syslogServerPort);
+            messageSender.setMessageFormat(config.syslogMessageFormat);
+            messageSender.setDefaultMessageHostname(messageHostname);
+            messageSender.setDefaultAppName(applicationName);
+            messageSender.setDefaultFacility(facility);
+            messageSender.setDefaultSeverity(severity);
+
+            try {
+                messageSender.sendMessage(messageText);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+
+            UdpSyslogMessageSender messageSender = new UdpSyslogMessageSender();
+
+            messageSender.setSyslogServerHostname(config.syslogServerName);
+            messageSender.setSyslogServerPort(config.syslogServerPort);
+            messageSender.setMessageFormat(config.syslogMessageFormat);
+            messageSender.setDefaultMessageHostname(messageHostname);
+            messageSender.setDefaultAppName(applicationName);
+            messageSender.setDefaultFacility(facility);
+            messageSender.setDefaultSeverity(severity);
+
+            try {
+                messageSender.sendMessage(messageText);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
     }
-
 }

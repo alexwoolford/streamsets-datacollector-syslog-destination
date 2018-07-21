@@ -13,32 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.woolford.stage.lib.sample;
+package io.woolford.stage.destination.syslog;
 
-import com.streamsets.pipeline.api.ErrorCode;
-import com.streamsets.pipeline.api.GenerateResourceBundle;
+import com.cloudbees.syslog.MessageFormat;
+import com.streamsets.pipeline.api.base.BaseEnumChooserValues;
 
-@GenerateResourceBundle
-public enum Errors implements ErrorCode {
-
-  SYSLOG_00("A configuration is invalid because: {}"),
-  SYSLOG_01("Specific reason writing record failed: {}"),
-  ;
-  private final String msg;
-
-  Errors(String msg) {
-    this.msg = msg;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String getCode() {
-    return name();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public String getMessage() {
-    return msg;
-  }
+public class MessageFormatChooserValues extends BaseEnumChooserValues<MessageFormat> {
+    public MessageFormatChooserValues() {
+        super(MessageFormat.class);
+    }
 }

@@ -15,25 +15,33 @@
  */
 package io.woolford.stage.destination.syslog;
 
+import com.streamsets.pipeline.api.ErrorCode;
 import com.streamsets.pipeline.api.GenerateResourceBundle;
-import com.streamsets.pipeline.api.Label;
 
 @GenerateResourceBundle
-public enum Groups implements Label {
-    SYSLOG("Syslog Connection"),
-    MESSAGE("Message Mapping");
+public enum Errors implements ErrorCode {
 
-    private final String label;
+    SYSLOG_00("A configuration is invalid because: {}"),
+    SYSLOG_01("Specific reason writing record failed: {}");
+    private final String msg;
 
-    private Groups(String label) {
-        this.label = label;
+    Errors(String msg) {
+        this.msg = msg;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getLabel() {
-        return this.label;
+    public String getCode() {
+        return name();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getMessage() {
+        return msg;
     }
 }

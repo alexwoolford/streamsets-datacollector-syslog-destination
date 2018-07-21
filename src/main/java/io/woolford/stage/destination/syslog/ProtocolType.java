@@ -19,21 +19,18 @@ import com.streamsets.pipeline.api.GenerateResourceBundle;
 import com.streamsets.pipeline.api.Label;
 
 @GenerateResourceBundle
-public enum Groups implements Label {
-    SYSLOG("Syslog Connection"),
-    MESSAGE("Message Mapping");
+public enum ProtocolType implements Label {
+    UDP("UDP"),
+    TCP("TCP"),;
 
     private final String label;
 
-    private Groups(String label) {
+    ProtocolType(String label) {
         this.label = label;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getLabel() {
-        return this.label;
+        return label;
     }
 }
