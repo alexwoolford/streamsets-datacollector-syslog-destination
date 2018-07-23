@@ -21,7 +21,7 @@ import com.streamsets.pipeline.api.Label;
 @GenerateResourceBundle
 public enum ProtocolType implements Label {
     UDP("UDP"),
-    TCP("TCP"),;
+    TCP("TCP");
 
     private final String label;
 
