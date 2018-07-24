@@ -39,9 +39,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-/**
- * This target is an example and does not actually write to any destination.
- */
 public class SyslogTarget extends BaseTarget {
 
     private static final Logger LOG = LoggerFactory.getLogger(SyslogTarget.class);
@@ -63,9 +60,6 @@ public class SyslogTarget extends BaseTarget {
         return elEval.eval(elVars, configValue, returnType);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected List<ConfigIssue> init() {
         // Validate configuration values and open any required resources.
@@ -77,7 +71,6 @@ public class SyslogTarget extends BaseTarget {
         this.syslogApplicationNameElEval = getContext().createELEval("syslogApplicationNameEL");
         this.syslogFacilityEval = getContext().createELEval("syslogFacilityEL");
         this.syslogSeverityEval = getContext().createELEval("syslogSeverityEL");
-
 
         return issues;
     }
@@ -96,7 +89,7 @@ public class SyslogTarget extends BaseTarget {
         while (batchIterator.hasNext()) {
             Record record = batchIterator.next();
             try {
-                if(config.syslogProtocolType == "TCP") {
+                if (config.syslogProtocolType == "TCP") {
                     writeTcp(record, this.tcpSender, variables);
                 } else {
                     writeUdp(record, this.udpSender, variables);
@@ -145,7 +138,8 @@ public class SyslogTarget extends BaseTarget {
         try {
             messageSender.sendMessage(messageText);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.info(e.getMessage());
+            LOG.debug(String.valueOf(e.getStackTrace()));
         }
     }
 
@@ -174,7 +168,8 @@ public class SyslogTarget extends BaseTarget {
         try {
             messageSender.sendMessage(messageText);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.info(e.getMessage());
+            LOG.debug(String.valueOf(e.getStackTrace()));
         }
     }
 }

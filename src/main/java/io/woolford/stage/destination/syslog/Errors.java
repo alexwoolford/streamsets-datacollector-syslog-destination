@@ -20,7 +20,6 @@ import com.streamsets.pipeline.api.GenerateResourceBundle;
 
 @GenerateResourceBundle
 public enum Errors implements ErrorCode {
-
     SYSLOG_00("A configuration is invalid because: {}"),
     SYSLOG_01("Specific reason writing record failed: {}");
     private final String msg;
@@ -29,17 +28,11 @@ public enum Errors implements ErrorCode {
         this.msg = msg;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getCode() {
         return name();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getMessage() {
         return msg;

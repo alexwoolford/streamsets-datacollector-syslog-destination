@@ -39,5 +39,4 @@ public class SyslogDTarget extends DTarget {
         return new SyslogTarget(config);
     }
 
-
 }

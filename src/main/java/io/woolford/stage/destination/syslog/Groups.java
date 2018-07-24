@@ -29,9 +29,6 @@ public enum Groups implements Label {
         this.label = label;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String getLabel() {
         return this.label;
